@@ -116,7 +116,7 @@
     {
       "parameters": {
         "chatId": "YOUR_TELEGRAM_CHAT_ID",
-        "text": "=<b>🌅 Daily Readiness Report</b>\\n\\n{{ $json.response }}",
+        "text": "={{ '<b>🌅 Daily Readiness Report</b>\\n\\n' + $json.response }}",
         "additionalFields": {
           "parse_mode": "HTML"
         }

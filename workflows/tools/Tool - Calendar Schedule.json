@@ -14,16 +14,18 @@
     },
     {
       "parameters": {
-        "operation": "get",
+        "operation": "getAll",
         "calendarId": {
           "__rl": true,
           "value": "YOUR_EMAIL@example.com",
           "mode": "list",
           "cachedResultName": "YOUR_EMAIL@example.com"
         },
-        "start": "={{ $json.startTime }}",
-        "end": "={{ $json.endTime }}",
+        "returnAll": false,
+        "limit": 50,
         "options": {
+          "timeMin": "={{ $json.startTime }}",
+          "timeMax": "={{ $json.endTime }}",
           "timeZone": "Asia/Singapore"
         }
       },
@@ -41,6 +43,27 @@
           "name": "Google Calendar OAuth2"
         }
       }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.length || 0 }}",
+              "operation": "equal",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "id": "e6f7a8b9-c0d1-2e3f-4a5b-6c7d8e9f0a1b",
+      "name": "Check No Conflicts",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        680,
+        300
+      ]
     },
     {
       "parameters": {
@@ -64,8 +87,8 @@
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1,
       "position": [
-        680,
-        300
+        900,
+        200
       ],
       "credentials": {
         "googleCalendarOAuth2Api": {
@@ -73,6 +96,31 @@
           "name": "Google Calendar OAuth2"
         }
       }
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "duplicateItem": false,
+        "assignments": {
+          "assignments": [
+            {
+              "id": "conflict-error",
+              "name": "error",
+              "value": "Calendar conflict detected. There are existing events in the requested time slot.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f7a8b9c0-d1e2-3f4a-5b6c-7d8e9f0a1b2c",
+      "name": "Return Conflict Error",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [
+        900,
+        400
+      ]
     }
   ],
   "pinData": {},
@@ -92,7 +140,25 @@
       "main": [
         [
           {
+            "node": "Check No Conflicts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check No Conflicts": {
+      "main": [
+        [
+          {
             "node": "Create Calendar Event",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return Conflict Error",
             "type": "main",
             "index": 0
           }
