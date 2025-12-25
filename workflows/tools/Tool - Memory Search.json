@@ -1,0 +1,91 @@
+{
+  "name": "Tool - Memory Search",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "a7b8c9d0-e1f2-3a4b-5c6d-7e8f9a0b1c2d",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "load",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "second-brain",
+          "mode": "list",
+          "cachedResultName": "second-brain"
+        },
+        "options": {}
+      },
+      "id": "b8c9d0e1-f2a3-4b5c-6d7e-8f9a0b1c2d3e",
+      "name": "Pinecone Vector Store",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1,
+      "position": [
+        460,
+        300
+      ],
+      "credentials": {
+        "pineconeApi": {
+          "id": "pinecone-credential-id",
+          "name": "Pinecone API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "query": "={{ $json.query }}",
+        "topK": 5
+      },
+      "id": "c9d0e1f2-a3b4-5c6d-7e8f-9a0b1c2d3e4f",
+      "name": "Vector Store Search",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreRetriever",
+      "typeVersion": 1,
+      "position": [
+        680,
+        300
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "main": [
+        [
+          {
+            "node": "Vector Store Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a7b8c9d0-e1f2-3a4b-5c6d-7e8f9a0b1c2d",
+  "meta": {
+    "instanceId": "your-n8n-instance-id"
+  },
+  "id": "tool-memory-search-001",
+  "tags": []
+}

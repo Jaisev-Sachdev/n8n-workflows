@@ -1,0 +1,225 @@
+{
+  "name": "Daily Readiness Marshal",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "b1c2d3e4-f5a6-7b8c-9d0e-1f2a3b4c5d6e",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "sub-agent-whoop-recovery-001",
+          "mode": "list"
+        }
+      },
+      "id": "c2d3e4f5-a6b7-8c9d-0e1f-2a3b4c5d6e7f",
+      "name": "Get Whoop Recovery Data",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendarId": {
+          "__rl": true,
+          "value": "YOUR_EMAIL@example.com",
+          "mode": "list",
+          "cachedResultName": "YOUR_EMAIL@example.com"
+        },
+        "returnAll": false,
+        "limit": 20,
+        "options": {
+          "timeMin": "={{ $now.toISO() }}",
+          "timeMax": "={{ $now.plus({ days: 1 }).toISO() }}",
+          "timeZone": "Asia/Singapore"
+        }
+      },
+      "id": "d3e4f5a6-b7c8-9d0e-1f2a-3b4c5d6e7f8a",
+      "name": "Get Today's Calendar",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1,
+      "position": [
+        460,
+        400
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "google-calendar-credential-id",
+          "name": "Google Calendar OAuth2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const recoveryData = $input.first().json;\nconst calendarEvents = $input.last().json;\n\nreturn {\n  json: {\n    recovery: recoveryData,\n    schedule: calendarEvents,\n    date: new Date().toISOString().split('T')[0]\n  }\n};"
+      },
+      "id": "e4f5a6b7-c8d9-0e1f-2a3b-4c5d6e7f8a9b",
+      "name": "Combine Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        680,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gemini-2.0-flash-exp",
+        "options": {
+          "temperature": 0.8,
+          "maxOutputTokens": 4096
+        }
+      },
+      "id": "f5a6b7c8-d9e0-1f2a-3b4c-5d6e7f8a9b0c",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        900,
+        400
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "google-gemini-credential-id",
+          "name": "Google Gemini API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Generate a personalized daily readiness report based on the following data:\\n\\nRecovery Metrics: {{ $json.recovery }}\\n\\nToday's Schedule: {{ $json.schedule }}\\n\\nProvide insights on:\\n1. Overall readiness score and what it means\\n2. Key recovery metrics (HRV, resting heart rate, sleep performance)\\n3. Schedule analysis and recommendations\\n4. Suggestions for optimizing the day based on recovery\\n5. Any warnings or concerns\\n\\nFormat the response in HTML for Telegram.",
+        "hasOutputParser": false,
+        "options": {}
+      },
+      "id": "a6b7c8d9-e0f1-2a3b-4c5d-6e7f8a9b0c1d",
+      "name": "Generate Report",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        900,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "={{ '<b>🌅 Daily Readiness Report</b>\\n\\n' + $json.response }}",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "b7c8d9e0-f1a2-3b4c-5d6e-7f8a9b0c1d2e",
+      "name": "Send Report to Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1120,
+        300
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "telegram-credential-id",
+          "name": "Telegram API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Whoop Recovery Data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Today's Calendar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Whoop Recovery Data": {
+      "main": [
+        [
+          {
+            "node": "Combine Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Today's Calendar": {
+      "main": [
+        [
+          {
+            "node": "Combine Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Data": {
+      "main": [
+        [
+          {
+            "node": "Generate Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate Report",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Report": {
+      "main": [
+        [
+          {
+            "node": "Send Report to Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Singapore"
+  },
+  "versionId": "b1c2d3e4-f5a6-7b8c-9d0e-1f2a3b4c5d6e",
+  "meta": {
+    "instanceId": "your-n8n-instance-id"
+  },
+  "id": "daily-readiness-marshal-001",
+  "tags": []
+}
