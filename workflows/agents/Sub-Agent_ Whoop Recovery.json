@@ -122,7 +122,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const cycle = $input.first().json;\nconst recovery = $input.item(1).json;\nconst sleep = $input.last().json;\n\nreturn {\n  json: {\n    recovery_score: recovery?.score?.recovery_score || 0,\n    hrv: recovery?.score?.hrv_rmssd_milli || 0,\n    resting_heart_rate: recovery?.score?.resting_heart_rate || 0,\n    sleep_performance: sleep?.score?.sleep_performance_percentage || 0,\n    sleep_duration_minutes: sleep?.score?.total_in_bed_time_milli ? sleep.score.total_in_bed_time_milli / 60000 : 0,\n    strain: cycle?.score?.strain || 0,\n    timestamp: new Date().toISOString()\n  }\n};"
+        "jsCode": "// Extract data from multiple input sources\nconst cycle = $input.first().json;\nconst recovery = $input.item(1).json;\nconst sleep = $input.last().json;\n\n// Process and structure the Whoop data\nreturn {\n  json: {\n    recovery_score: recovery?.score?.recovery_score || 0,\n    hrv: recovery?.score?.hrv_rmssd_milli || 0,\n    resting_heart_rate: recovery?.score?.resting_heart_rate || 0,\n    sleep_performance: sleep?.score?.sleep_performance_percentage || 0,\n    sleep_duration_minutes: sleep?.score?.total_in_bed_time_milli \n      ? sleep.score.total_in_bed_time_milli / 60000 \n      : 0,\n    strain: cycle?.score?.strain || 0,\n    timestamp: new Date().toISOString()\n  }\n};"
       },
       "id": "a7b8c9d0-e1f2-3a4b-5c6d-7e8f9a0b1c2d",
       "name": "Process Whoop Data",
