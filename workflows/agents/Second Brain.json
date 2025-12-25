@@ -1,0 +1,405 @@
+{
+  "name": "Second Brain",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ]
+      },
+      "id": "a9b0c1d2-e3f4-5a6b-7c8d-9e0f1a2b3c4d",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ],
+      "webhookId": "telegram-webhook-id",
+      "credentials": {
+        "telegramApi": {
+          "id": "telegram-credential-id",
+          "name": "Telegram API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 10 * * *"
+            }
+          ]
+        }
+      },
+      "id": "b0c1d2e3-f4a5-6b7c-8d9e-0f1a2b3c4d5e",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a helpful AI assistant called Second Brain. You have access to various tools to help manage calendars, tasks, memory, web searches, and document reading. Analyze user requests and use the appropriate tools to fulfill them. Always provide responses in HTML format for Telegram compatibility. Current timezone: Asia/Singapore."
+        }
+      },
+      "id": "c1d2e3f4-a5b6-7c8d-9e0f-1a2b3c4d5e6f",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gemini-2.0-flash-exp",
+        "options": {
+          "temperature": 0.7,
+          "maxOutputTokens": 8192
+        }
+      },
+      "id": "d2e3f4a5-b6c7-8d9e-0f1a-2b3c4d5e6f7a",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        680,
+        400
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "google-gemini-credential-id",
+          "name": "Google Gemini API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.message.chat.id }}",
+        "contextWindowLength": 12
+      },
+      "id": "e3f4a5b6-c7d8-9e0f-1a2b-3c4d5e6f7a8b",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        680,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "tool-link-reader-001",
+          "mode": "list"
+        },
+        "name": "link_reader",
+        "description": "Reads and extracts content from a webpage URL. Use this when the user provides a URL to read or analyze."
+      },
+      "id": "f4a5b6c7-d8e9-0f1a-2b3c-4d5e6f7a8b9c",
+      "name": "Tool - Link Reader",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        680,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "tool-add-task-001",
+          "mode": "list"
+        },
+        "name": "add_task",
+        "description": "Creates a new task in Todoist. Use this when the user wants to add a reminder, create a to-do item, or schedule a task."
+      },
+      "id": "a5b6c7d8-e9f0-1a2b-3c4d-5e6f7a8b9c0d",
+      "name": "Tool - Add Task",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        680,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "tool-web-search-001",
+          "mode": "list"
+        },
+        "name": "web_search",
+        "description": "Performs a Google search using SerpAPI. Use this when the user asks for current information, news, or wants to search the web."
+      },
+      "id": "b6c7d8e9-f0a1-2b3c-4d5e-6f7a8b9c0d1e",
+      "name": "Tool - Web Search",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "tool-memory-search-001",
+          "mode": "list"
+        },
+        "name": "memory_search",
+        "description": "Searches the vector database for stored memories and information. Use this when the user asks about something they told you before or wants to recall information."
+      },
+      "id": "c7d8e9f0-a1b2-3c4d-5e6f-7a8b9c0d1e2f",
+      "name": "Tool - Memory Search",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "tool-memory-add-001",
+          "mode": "list"
+        },
+        "name": "memory_add",
+        "description": "Stores information in the vector database for future retrieval. Use this when the user explicitly asks you to remember something or shares important personal information."
+      },
+      "id": "d8e9f0a1-b2c3-4d5e-6f7a-8b9c0d1e2f3g",
+      "name": "Tool - Memory Add",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "tool-calendar-schedule-001",
+          "mode": "list"
+        },
+        "name": "calendar_schedule",
+        "description": "Creates a new event in Google Calendar with conflict checking. Use this when the user wants to schedule a meeting, event, or appointment."
+      },
+      "id": "e9f0a1b2-c3d4-5e6f-7a8b-9c0d1e2f3a4h",
+      "name": "Tool - Calendar Schedule",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "tool-calendar-view-001",
+          "mode": "list"
+        },
+        "name": "calendar_view",
+        "description": "Retrieves events from Google Calendar for a specified date range. Use this when the user asks about their schedule, upcoming events, or calendar availability."
+      },
+      "id": "f0a1b2c3-d4e5-6f7a-8b9c-0d1e2f3a4b5i",
+      "name": "Tool - Calendar View",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6j",
+      "name": "Send Telegram Response",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1100,
+        300
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "telegram-credential-id",
+          "name": "Telegram API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool - Link Reader": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool - Add Task": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool - Web Search": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool - Memory Search": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool - Memory Add": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool - Calendar Schedule": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool - Calendar View": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Singapore"
+  },
+  "versionId": "a9b0c1d2-e3f4-5a6b-7c8d-9e0f1a2b3c4d",
+  "meta": {
+    "instanceId": "your-n8n-instance-id"
+  },
+  "id": "second-brain-001",
+  "tags": []
+}

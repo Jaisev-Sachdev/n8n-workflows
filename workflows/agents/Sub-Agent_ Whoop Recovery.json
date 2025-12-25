@@ -1,0 +1,204 @@
+{
+  "name": "Sub-Agent_ Whoop Recovery",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "c3d4e5f6-a7b8-9c0d-1e2f-3a4b5c6d7e8f",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.whoop.com/v1/cycle",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "limit",
+              "value": "1"
+            },
+            {
+              "name": "sort",
+              "value": "desc"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f9a",
+      "name": "Get Latest Whoop Cycle",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        460,
+        300
+      ],
+      "credentials": {
+        "oAuth2Api": {
+          "id": "whoop-oauth2-credential-id",
+          "name": "Whoop OAuth2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.whoop.com/v1/recovery",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "limit",
+              "value": "1"
+            },
+            {
+              "name": "sort",
+              "value": "desc"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9a0b",
+      "name": "Get Latest Recovery",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        460,
+        400
+      ],
+      "credentials": {
+        "oAuth2Api": {
+          "id": "whoop-oauth2-credential-id",
+          "name": "Whoop OAuth2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.whoop.com/v1/sleep",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "limit",
+              "value": "1"
+            },
+            {
+              "name": "sort",
+              "value": "desc"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f6a7b8c9-d0e1-2f3a-4b5c-6d7e8f9a0b1c",
+      "name": "Get Latest Sleep",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        460,
+        500
+      ],
+      "credentials": {
+        "oAuth2Api": {
+          "id": "whoop-oauth2-credential-id",
+          "name": "Whoop OAuth2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const cycle = $input.first().json;\nconst recovery = $input.item(1).json;\nconst sleep = $input.last().json;\n\nreturn {\n  json: {\n    recovery_score: recovery?.score?.recovery_score || 0,\n    hrv: recovery?.score?.hrv_rmssd_milli || 0,\n    resting_heart_rate: recovery?.score?.resting_heart_rate || 0,\n    sleep_performance: sleep?.score?.sleep_performance_percentage || 0,\n    sleep_duration_minutes: sleep?.score?.total_in_bed_time_milli ? sleep.score.total_in_bed_time_milli / 60000 : 0,\n    strain: cycle?.score?.strain || 0,\n    timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "id": "a7b8c9d0-e1f2-3a4b-5c6d-7e8f9a0b1c2d",
+      "name": "Process Whoop Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        680,
+        300
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Latest Whoop Cycle",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Latest Recovery",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Latest Sleep",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Latest Whoop Cycle": {
+      "main": [
+        [
+          {
+            "node": "Process Whoop Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Latest Recovery": {
+      "main": [
+        [
+          {
+            "node": "Process Whoop Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Latest Sleep": {
+      "main": [
+        [
+          {
+            "node": "Process Whoop Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c3d4e5f6-a7b8-9c0d-1e2f-3a4b5c6d7e8f",
+  "meta": {
+    "instanceId": "your-n8n-instance-id"
+  },
+  "id": "sub-agent-whoop-recovery-001",
+  "tags": []
+}

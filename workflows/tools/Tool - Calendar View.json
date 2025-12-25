@@ -1,0 +1,73 @@
+{
+  "name": "Tool - Calendar View",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "e7f8a9b0-c1d2-3e4f-5a6b-7c8d9e0f1a2b",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendarId": {
+          "__rl": true,
+          "value": "YOUR_EMAIL@example.com",
+          "mode": "list",
+          "cachedResultName": "YOUR_EMAIL@example.com"
+        },
+        "returnAll": false,
+        "limit": 50,
+        "options": {
+          "timeMin": "={{ $json.startDate }}",
+          "timeMax": "={{ $json.endDate }}",
+          "timeZone": "Asia/Singapore"
+        }
+      },
+      "id": "f8a9b0c1-d2e3-4f5a-6b7c-8d9e0f1a2b3c",
+      "name": "Get Calendar Events",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1,
+      "position": [
+        460,
+        300
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "google-calendar-credential-id",
+          "name": "Google Calendar OAuth2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Calendar Events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Singapore"
+  },
+  "versionId": "e7f8a9b0-c1d2-3e4f-5a6b-7c8d9e0f1a2b",
+  "meta": {
+    "instanceId": "your-n8n-instance-id"
+  },
+  "id": "tool-calendar-view-001",
+  "tags": []
+}
